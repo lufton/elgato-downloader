@@ -26,13 +26,13 @@ pip install -r requirements.txt
 ### uv ###
 
 ```shell
-elgato-downloader URL [VARIANT] [-u USERNAME] [-p PASSWORD] [-d]
+elgato-downloader URL [VARIANT] [-u USERNAME] [-p PASSWORD] [-d] [-c]
 ```
 
 ### pip ###
 
 ```shell
-python elgato_downloader.py URL [VARIANT] [-u USERNAME] [-p PASSWORD] [-d]
+python elgato_downloader.py URL [VARIANT] [-u USERNAME] [-p PASSWORD] [-d] [-c]
 ```
 
 ## Arguments: ##
@@ -47,16 +47,18 @@ python elgato_downloader.py URL [VARIANT] [-u USERNAME] [-p PASSWORD] [-d]
 
 `-d` or `--deploy` – automatically deploy downloaded file to `%AppData%\HotSpot\StreamDock\` folder (**works only for Windows**)
 
+`-c` or `--convert` – automatically convert SVG icons to PNGs (**Cairo libraries for Windows included**)
+
 ## Example: ##
 
 ### uv ###
 
 ```shell
-elgato-downloader https://marketplace.elgato.com/product/duotone-essentials-40d39587-c45d-42ed-a9a8-9ec6eadf3609 Yellow -u username -p password -d
+elgato-downloader https://marketplace.elgato.com/product/duotone-essentials-40d39587-c45d-42ed-a9a8-9ec6eadf3609 Yellow -u username -p password -d -c
 ```
 
 ### pip ###
 
 ```shell
-python elgato_downloader.py https://marketplace.elgato.com/product/duotone-essentials-40d39587-c45d-42ed-a9a8-9ec6eadf3609 Yellow -u username -p password -d
+python elgato_downloader.py https://marketplace.elgato.com/product/duotone-essentials-40d39587-c45d-42ed-a9a8-9ec6eadf3609 Yellow -u username -p password -d -c
 ```
