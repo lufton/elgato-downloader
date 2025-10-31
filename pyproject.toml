@@ -6,6 +6,7 @@ requires-python = ">=3.10"
 authors = [{ name = "Lufton" }]
 readme = "README.md"
 dependencies = [
+    "cairosvg",
     "python-dotenv>=1.0.1",
     "requests>=2.31.0",
     "urllib3>=1.21.1"

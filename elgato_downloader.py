@@ -22,6 +22,7 @@ DEFAULT_PASSWORD = os.getenv("ELGATO_PASSWORD")
 CLIENT_ID = "streamdeck-v2"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
 REDIRECT_URL = "https://oauth2-redirect.elgato.com/streamdeck/marketplace/auth/"
+ICON_SIZE = 144
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -215,16 +216,48 @@ def get_deploy_path(path: str, extension: str) -> str:
     return deploy_path
 
 
-def unzip(path: str, deploy_path: str):
+def unzip(path: str, deploy_path: str) -> str:
     logger.info(f"Unzipping {path} to {deploy_path}...")
 
     with zipfile.ZipFile(path, "r") as zip_ref:
+        [folder, *_] = zip_ref.namelist()
         zip_ref.extractall(deploy_path)
+
+    deploy_path = f"{deploy_path}\\{folder.rstrip('/')}"
 
     logger.info(f"{path} was unzipped to {deploy_path}")
 
+    return deploy_path
 
-def main(username: str, password: str, url: str, variant_name: str = None, deploy: bool = False) -> None:
+
+def convert_svgs(path: str):
+    logger.info(f"Converting SVGs in {path}...")
+
+    if sys.platform == "win32":
+        x86_dll_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "cairo", "x64")
+        x64_dll_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "cairo", "x64")
+        os.environ["PATH"] = x86_dll_dir + os.pathsep + x64_dll_dir + os.pathsep + os.environ.get("PATH", "")
+
+    import cairosvg
+    count = 0
+
+    for filename in os.listdir(path):
+        if filename.lower().endswith(".svg"):
+            input_path = os.path.join(path, filename)
+            output_name = os.path.splitext(filename)[0] + ".png"
+            output_path = os.path.join(path, output_name)
+            cairosvg.svg2png(
+                url=input_path,
+                write_to=output_path,
+                output_width=ICON_SIZE,
+                output_height=ICON_SIZE
+            )
+            count += 1
+
+    logger.info(f"{count} SVGs were converted in {path}")
+
+
+def main(username: str, password: str, url: str, variant_name: str = None, deploy: bool = False, convert: bool = False) -> None:
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     extension, variant_id = get_extension(url, variant_name)
 
@@ -246,7 +279,10 @@ def main(username: str, password: str, url: str, variant_name: str = None, deplo
 
     if deploy:
         deploy_path = get_deploy_path(path, extension)
-        unzip(path, deploy_path)
+        path = unzip(path, deploy_path)
+
+        if extension == "icons" and convert:
+            convert_svgs(f"{path}\\icons")
 
 
 def cli():
@@ -256,8 +292,9 @@ def cli():
     parser.add_argument('url', help='Elgato MarketPlace URL')
     parser.add_argument('variant', nargs='?', help='Content variant name (e.g. "Yellow"), defaults to default variant')
     parser.add_argument("-d", "--deploy", action="store_true", help="Deploy downloaded content to Stream Dock folder")
+    parser.add_argument("-c", "--convert", action="store_true", help="Convert downloaded SVG icons to PNGs")
     args = parser.parse_args()
-    main(args.username, args.password, args.url, args.variant, args.deploy)
+    main(args.username, args.password, args.url, args.variant, args.deploy, args.convert)
 
 
 if __name__ == '__main__':
